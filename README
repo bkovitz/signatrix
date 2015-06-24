@@ -17,7 +17,7 @@ Signatrix has three commands: read, dump, and tally.
       and stores the scans to 'filename.db', a database that you'll
       need for the other commands.
 
-      It can take around an hour to scan a file of 1000 lines. This is
+      It can take a couple hours to scan a file of 1000 lines. This is
       why Signatrix stores the scans in a database: so you can do things
       with the scans without regenerating them.
 
