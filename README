@@ -1,0 +1,43 @@
+Signatrix
+---------
+Signatrix is a program that scans Latin verse and infers vowel
+quantities and accents.
+
+
+How to run Signatrix
+--------------------
+Before you can do anything, you'll need Python (version 3) installed on
+your system.
+
+Signatrix has three commands: read, dump, and tally.
+
+   python3 signatrix.py read filename
+
+      Reads 'filename' (a text file of Latin verse), scans them,
+      and stores the scans to 'filename.db', a database that you'll
+      need for the other commands.
+
+      It can take around an hour to scan a file of 1000 lines. This is
+      why Signatrix stores the scans in a database: so you can do things
+      with the scans without regenerating them.
+
+
+   python3 signatrix.py dump dbname.db
+
+      Outputs the scans stored in the specified database.
+
+
+   python3 signatrix.py tally dbname1.db dbname2.db ...
+
+      Tallies all the words and word forms that appear in the specified
+      databases, and outputs results in this format:
+
+
+Modifying Signatrix
+-------------------
+If you'd like to modify Signatrix or experiment with different ways to
+scan, look at the Makefile. It contains a target, 'ut', that runs a
+suit of unit tests be sure you haven't broken anything. To run the unit
+tests, type this at the shell prompt:
+
+   make ut
