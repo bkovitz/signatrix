@@ -75,7 +75,7 @@ class Tally:
                   mean(self.word_form_to_scanset_proportion[word_form])))
 
 
-def scan(filename):
+def read(filename):
     book = scan_book(book_name(filename), open(filename, 'r'))
     with shelve.open(database_name(filename)) as sh:
         sh[book.name] = book
@@ -111,11 +111,11 @@ class Main:
     def __init__(self, argv):
         if len(argv) < 2:
             self.usage()
-        elif argv[1] == 'scan':
+        elif argv[1] == 'read':
             if not argv[2:]:
                 self.usage()
             for filename in argv[2:]:
-                scan(filename)
+                read(filename)
         elif argv[1] == 'dump':
             if not argv[2:]:
                 self.usage()
@@ -132,7 +132,7 @@ class Main:
     def usage(cls):
         print(
 '''usage:
-  signatrix scan filenames...
+  signatrix read filenames...
   signatrix dump databases...
   signatrix tally databases...''', file=sys.stderr,)
         sys.exit(2)

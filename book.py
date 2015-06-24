@@ -1,3 +1,5 @@
+from sys import stdout
+
 from source import Source
 from line import Line
 from misc import lazy, trace, dd, Multiple
@@ -45,4 +47,5 @@ def scan_book(name, file):
                     line.text,
                     len(line.scans)
                 ))
+                stdout.flush()
     return book
