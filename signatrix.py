@@ -84,8 +84,6 @@ class Tally:
 
 def scan(filename):
     return scan_book(book_name(filename), open(filename, 'r'))
-#    with shelve.open(database_name(filename)) as sh:
-#        sh[book.name] = book
 
 def dump(dbname):
     for line in BookDatabase(dbname).lines:
@@ -93,11 +91,6 @@ def dump(dbname):
 
 def tally(dbnames):
     tally = Tally()
-#     for dbname in dbnames:
-#         with shelve.open(dbname, 'r') as sh:
-#             for book_name in sh.keys():
-#                 book = sh[book_name]
-#                 tally.record_all_word_forms(book.lines)
     for dbname in dbnames:
         tally.record_all_word_forms(BookDatabase(dbname).lines)
     tally.count_word_form_proportions()
