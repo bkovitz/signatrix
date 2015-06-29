@@ -2,6 +2,8 @@ import functools
 from itertools import islice, chain, repeat, tee, filterfalse
 import types
 import collections
+import os
+import re
 
 
 class SignatrixError(RuntimeError):
@@ -203,3 +205,20 @@ def default(f, deflt=None):
 
 def first_true(iterable, pred=None, default=None):
     return next(filter(pred, iterable), default)
+
+def safe_unlink(filename):
+    try:
+        os.unlink(filename)
+    except FileNotFoundError:
+        pass
+
+def safe_mkdir(dirname):
+    try:
+        os.mkdir(dirname)
+    except FileExistsError:
+        pass
+
+re_white_space = re.compile(r'\s+')
+
+def strip_white_space(s):
+    return re_white_space.sub('', s)

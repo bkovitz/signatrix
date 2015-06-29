@@ -79,8 +79,11 @@ class Line(HasSource):
             result.append('%d. %s' % (self.source.index, self.original_text))
         else:
             result.append(self.original_text)
-        for scan in self.scans:
-            result.append('  %s' % str(scan))
+        if len(self.scans):
+            for scan in self.scans:
+                result.append('  %s' % str(scan))
+        else:
+            result.append('  (Failed to scan.)')
         return '\n'.join(result)
 
 
