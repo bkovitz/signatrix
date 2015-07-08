@@ -1,4 +1,5 @@
 import re
+import logging
 
 #from list import *
 from source import Source, HasSource
@@ -46,27 +47,32 @@ class Line(HasSource):
     @property
     @lazy
     def letters(self):
+        logging.info('MAKING LETTERS FOR %s', self.original_text)
         return make_letters(self.word_instances)
 
     @property
     @lazy
     def with_elisions(self):
+        logging.info('ADDING ELISIONS TO %s', self.original_text)
         return make_elisions(self.letters)
 
     @property
     @lazy
     def with_clusters(self):
+        logging.info('MAKING CONSONANT CLUSTERS FOR %s', self.original_text)
         return make_clusters(self.with_elisions)
 
     @property
     @lazy
     def syllables(self):
+        logging.info('SYLLABIFYING %s', self.original_text)
         return make_syllables(self.with_clusters)
 
     @property
     @lazy
     def scans(self):
         #return make_scans(self.syllables)
+        logging.info('SCANNING %s', self.original_text)
         return eliminate_redundant_scans(make_scans(self.syllables))
 
     def __repr__(self):

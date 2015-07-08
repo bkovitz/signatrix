@@ -1,13 +1,13 @@
 #! /bin/bash
-nohup python3 signatrix.py read data/aen1.txt &
-nohup python3 signatrix.py read data/aen2.txt &
-nohup python3 signatrix.py read data/aen3.txt &
-nohup python3 signatrix.py read data/aen4.txt &
-nohup python3 signatrix.py read data/aen5.txt &
-nohup python3 signatrix.py read data/aen6.txt &
-nohup python3 signatrix.py read data/aen7.txt &
-nohup python3 signatrix.py read data/aen8.txt &
-nohup python3 signatrix.py read data/aen9.txt &
-nohup python3 signatrix.py read data/aen10.txt &
-nohup python3 signatrix.py read data/aen11.txt &
-nohup python3 signatrix.py read data/aen12.txt &
+nohup nice python3 signatrix.py scan data/aen1.txt &
+nohup nice python3 signatrix.py scan data/aen2.txt &
+nohup nice python3 signatrix.py scan data/aen3.txt &
+nohup nice python3 signatrix.py scan data/aen4.txt &
+nohup nice python3 signatrix.py scan data/aen5.txt &
+nohup nice python3 signatrix.py scan data/aen6.txt &
+nohup nice python3 signatrix.py scan data/aen7.txt &
+nohup nice python3 signatrix.py scan data/aen8.txt &
+nohup nice python3 signatrix.py scan data/aen9.txt &
+nohup nice python3 signatrix.py scan data/aen10.txt &
+nohup nice python3 signatrix.py scan data/aen11.txt &
+nohup nice python3 signatrix.py scan data/aen12.txt &

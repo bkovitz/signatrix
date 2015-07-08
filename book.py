@@ -1,10 +1,12 @@
 from sys import stdout
 from os.path import basename, splitext
 import shelve
+import dbm
 
 from source import Source
 from line import Line
 from misc import lazy, trace, dd, Multiple, strip_white_space, safe_mkdir
+from command_line import command_line_arguments
 
 # class Book:
 # 
@@ -60,7 +62,7 @@ class BookDatabase:
     def book_name(cls, filename):
         return splitext(basename(filename))[0]
 
-    def __init__(self, book, dbname=None):
+    def __init__(self, book, dbname=None, flag='c'):
         if type(book) is str:
             book = Book(book)
         self.book = book
@@ -69,8 +71,16 @@ class BookDatabase:
             self.dbname = self.database_name(self.name)
         else:
             self.dbname = dbname
-        safe_mkdir('db')
-        self.sh = shelve.open(self.dbname)
+        safe_mkdir(command_line_arguments.dbdir)
+        try:
+            self.sh = shelve.open(self.dbname, flag=flag)
+        except dbm.error as exc:
+            # HACK: shelve seems to offer no way to tell that a db file
+            # doesn't exist, even when passed flag='r'.
+            if exc.args == ("need 'c' or 'n' flag to open new db",):
+                raise OSError('database not found: ' + self.dbname)
+            else:
+                raise
 
     def __del__(self):
         try:
@@ -100,6 +110,9 @@ class BookDatabase:
     @property
     def lines(self):
         for line_num in sorted(self.sh.keys(), key=int):
+            # DEBUG
+            o = self.sh[line_num]
+
             yield self.sh[line_num]
 
 

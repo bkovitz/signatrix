@@ -35,6 +35,4 @@ class TestBook(unittest.TestCase):
 """1. arma virumque cano trojae qui primus ab oris (7 scans)
 2. aeneas quamquam et sociis dare tempus humandis (0 scans)
 """)
-        # This might break because we can't always tell what shelve will
-        # name the database file.
-        #os.unlink('db/TestBook.db')
+        os.unlink(book.dbname)

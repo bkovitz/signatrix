@@ -6,8 +6,9 @@ import os
 import re
 
 
-class SignatrixError(RuntimeError):
-    pass
+class SignatrixError(RuntimeError): pass
+
+class CommandLineError(SignatrixError): pass
 
 
 trace_indent = 0
@@ -120,7 +121,7 @@ def flatstr(x):
 
 
 class Pipeline:
-    def __init__(self, *stages):
+    def __init__(self, *stages, logmsg=None):
         self.stages = stages
 
     def __call__(self, x):
@@ -222,3 +223,27 @@ re_white_space = re.compile(r'\s+')
 
 def strip_white_space(s):
     return re_white_space.sub('', s)
+
+
+class ObjectHolder:
+
+    def __init__(self, initial_object=None):
+        self._object = initial_object
+
+    def __getattr__(self, name):
+        try:
+            return getattr(self._object, name)
+        except AttributeError:
+            raise
+
+    def __setattr__(self, name, value):
+        if name == '_object':
+            object.__setattr__(self, '_object', value)
+        else:
+            return setattr(self._object, name, value)
+
+    def replace_with(self, new_object):
+        if isinstance(new_object, ObjectHolder):
+            self.replace_with(new_object._object)
+        else:
+            self._object = new_object

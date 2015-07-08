@@ -1,3 +1,5 @@
+import logging
+
 from replace import CombinatoricMap, Target, ReplaceWith, Var, Any, MakeInto, \
     CanMatchTargetElem, Disallow, Filter, TestVar
 from source import Source, HasSource
