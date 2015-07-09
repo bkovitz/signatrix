@@ -17,28 +17,28 @@ options_parser.add_argument(
     default='db',
     help="database directory (default: db)"
 )
-scansion_group = options_parser.add_argument_group('scansion stages')
-scansion_group.add_argument(
+stage_group = options_parser.add_argument_group('scansion stages')
+stage_group.add_argument(
     '--letters',
     action='store_true',
     help='show all interpretations of the letters in each line'
 )
-scansion_group.add_argument(
+stage_group.add_argument(
     '--elisions',
     action='store_true',
     help='show stage in which elisions and hiatuses are added to each line'
 )
-scansion_group.add_argument(
+stage_group.add_argument(
     '--clusters',
     action='store_true',
     help='show stage in which line is broken into consonant clusters'
 )
-scansion_group.add_argument(
+stage_group.add_argument(
     '--syllables',
     action='store_true',
     help='show stage in which line is broken into syllables'
 )
-scansion_group.add_argument(
+stage_group.add_argument(
     '--feet',
     action='store_true',
     help='show final scans (included by default unless another scansion stage is chosen)'
@@ -70,7 +70,11 @@ options_parser.add_argument(
     action='store_true',
     help='original text rather than normalized text'
 )
-
+options_parser.add_argument(
+    '--mark-hiatus',
+    action='store_true',
+    help='indicate hiatuses in output: (H) in simon format; | in others'
+)
 options_parser.add_argument(
     '-v', '--verbose',
     action='store_true',

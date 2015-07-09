@@ -5,7 +5,7 @@ from replace import CombinatoricMap, Target, ReplaceWith, Var, Any, MakeInto, \
     Make
 from source import Source, HasSource
 from letter import Letter, is_vowel, WordBreak, is_wordbreak
-from command_line import HasCommandLineStr
+from command_line import HasCommandLineStr, command_line_arguments
 from misc import trace, dd, lazy, Pipeline
 from testing import reduce_to_text
 
@@ -71,13 +71,19 @@ class Hiatus(WordBreak, HasCommandLineStr):
         return self
 
     def __str__(self):
-        return ''
+        if command_line_arguments.mark_hiatus:
+            return '|'
+        else:
+            return ''
 
     def simon(self):
-        return '(H)'
+        if command_line_arguments.mark_hiatus:
+            return '(H)'
+        else:
+            return ''
 
     def latex(self):
-        return ''
+        return str(self)
 
 hiatus = Hiatus()
 
