@@ -9,7 +9,9 @@ from elision import make_elisions
 from cluster import make_clusters
 from syllable import make_syllables
 from scan import make_scans, eliminate_redundant_scans
-from misc import lazy, trace, dd, Multiple
+from command_line import command_line_arguments
+from misc import lazy, trace, dd, Multiple, number_strs, flatten, intersperse, \
+    flatstr, str_per_command_line
 
 
 alpha_only = re.compile('[^ a-z]')
@@ -47,32 +49,26 @@ class Line(HasSource):
     @property
     @lazy
     def letters(self):
-        logging.info('MAKING LETTERS FOR %s', self.original_text)
         return make_letters(self.word_instances)
 
     @property
     @lazy
     def with_elisions(self):
-        logging.info('ADDING ELISIONS TO %s', self.original_text)
         return make_elisions(self.letters)
 
     @property
     @lazy
     def with_clusters(self):
-        logging.info('MAKING CONSONANT CLUSTERS FOR %s', self.original_text)
         return make_clusters(self.with_elisions)
 
     @property
     @lazy
     def syllables(self):
-        logging.info('SYLLABIFYING %s', self.original_text)
         return make_syllables(self.with_clusters)
 
     @property
     @lazy
     def scans(self):
-        #return make_scans(self.syllables)
-        logging.info('SCANNING %s', self.original_text)
         return eliminate_redundant_scans(make_scans(self.syllables))
 
     def __repr__(self):
@@ -92,4 +88,26 @@ class Line(HasSource):
             result.append('  (Failed to scan.)')
         return '\n'.join(result)
 
+    def str_per_command_line(self):
+        result = []
+        result.append(self.text_per_command_line())
+        if command_line_arguments.letters:
+            result.append(str_per_command_line(self.letters))
+        if command_line_arguments.elisions:
+            result.append(str_per_command_line(self.with_elisions))
+        if command_line_arguments.clusters:
+            result.append(str_per_command_line(self.with_clusters))
+        if command_line_arguments.syllables:
+            result.append(str_per_command_line(self.syllables))
+        if command_line_arguments.feet:
+            result.append(str_per_command_line(self.scans))
+        return '\n'.join(intersperse('', result))
+
+    def text_per_command_line(self):
+        return (
+            self.original_text
+                if command_line_arguments.original
+                else self.text
+        )
+        
 

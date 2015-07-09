@@ -5,9 +5,10 @@ from replace import CombinatoricMap, Target, ReplaceWith, Var, Any, MakeInto, \
 from source import Source, HasSource
 from misc import trace, dd, lazy, Pipeline, flatten, intersperse, \
     run_multiple, Multiple, Unknown, Incompatible
+from command_line import HasCommandLineStr
 
 
-class Letter(CanMatchTargetElem, HasSource):
+class Letter(CanMatchTargetElem, HasSource, HasCommandLineStr):
 
     unicode_table = {}
 
@@ -16,12 +17,12 @@ class Letter(CanMatchTargetElem, HasSource):
         'oe': 'œ'
     }
 
-#    latex_table = {}
-#
-#    digraph_latex_table = {
-#        'ae': r'{\ae}',
-#        'oe': r'{\oe}'
-#    }
+    latex_table = {}
+
+    digraph_latex_table = {
+        'ae': r'{\ae}',
+        'oe': r'{\oe}'
+    }
 
     def __init__(self, text, source=None, hidden=()):
         self.text = text
@@ -153,8 +154,34 @@ class Letter(CanMatchTargetElem, HasSource):
             except KeyError:
                 return text
         
+    @classmethod
+    def make_latex(cls, text):
+        try:
+            return cls.latex_table[text]
+        except KeyError:
+            try:
+                return cls.digraph_latex_table[text]
+            except KeyError:
+                return text
+
     def latex(self):
-        return str(self)
+        return (
+            self.make_latex(self.text)
+            +
+            ''.join(
+                self.make_latex(h) if type(h) is str else h.latex()
+                    for h in self.hidden
+            )
+        )
+
+    def simon(self):
+        if self.is_vowel:
+            return 'U(%s)' % self.text
+        else:
+            if len(self.text) > 1:
+                return '(%s)' % self.text
+            else:
+                return self.text
 
 
 class Vowel(Letter):
@@ -166,12 +193,6 @@ class Vowel(Letter):
     @property
     def is_short(self):
         return not self.is_long
-
-#    def make_short(self):
-#        return ShortVowel(self)
-#
-#    def make_long(self):
-#        return LongVowel(self)
 
     def make_long(self):
         return LongVowel(self.text, self.source, self.hidden)
@@ -190,8 +211,13 @@ class LongVowel(Vowel):
         'u': 'ū'
     }
 
-    #def __init__(self, vowel, hidden=[]):
-        #super().__init__(vowel.text, vowel.source, hidden=hidden)
+    latex_table = {
+        'a': r'\=a',
+        'e': r'\=e',
+        'i': r'\={\i}',
+        'o': r'\=o',
+        'u': r'\=u'
+    }
 
     is_long = True
 
@@ -200,6 +226,9 @@ class LongVowel(Vowel):
 
     def make_long(self):
         return self
+
+    def simon(self):
+        return 'L(%s)' % self.text
 
 
 class ShortVowel(Vowel):
@@ -212,8 +241,13 @@ class ShortVowel(Vowel):
         'u': 'ŭ'
     }
 
-    #def __init__(self, vowel, hidden=[]):
-        #super().__init__(vowel.text, vowel.source, hidden=hidden)
+    latex_table = {
+        'a': r'\u{a}',
+        'e': r'\u{e}',
+        'i': r'\u{\i}',
+        'o': r'\u{o}',
+        'u': r'\u{u}'
+    }
 
     is_long = False
 
@@ -222,6 +256,9 @@ class ShortVowel(Vowel):
 
     def make_long(self):
         raise Incompatible
+
+    def simon(self):
+        return 'S(%s)' % self.text
 
 
 def make_long(x):
@@ -237,7 +274,7 @@ def make_short(x):
         return x
 
 
-class WordBreak(CanMatchTargetElem):
+class WordBreak(CanMatchTargetElem, HasCommandLineStr):
 
     def matches_target_elem(self, target_elem):
         return target_elem.isspace()
@@ -249,6 +286,15 @@ class WordBreak(CanMatchTargetElem):
     is_wordbreak = True
 
     def __repr__(self):
+        return 'WordBreak'
+
+    def __str__(self):
+        return 'WordBreak'
+
+    def simon(self):
+        return '(B)'
+
+    def latex(self):
         return 'WordBreak'
 
 
@@ -366,10 +412,14 @@ remove_invalid_letter_combinations = Filter(
 def strip_leading_and_trailing_wordbreaks(letters):
     return Multiple(letters[1:-1])
 
-make_letters = Pipeline(
+do_letters_pipe = Pipeline(
     word_instances_to_letters,
     ij_uv,
     digraphs,
     remove_invalid_letter_combinations,
-    strip_leading_and_trailing_wordbreaks
+    strip_leading_and_trailing_wordbreaks,
 )
+
+def make_letters(word_instances):
+    logging.info('MAKING LETTERS')
+    return do_letters_pipe(word_instances)

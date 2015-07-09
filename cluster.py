@@ -1,4 +1,5 @@
 from itertools import chain, product
+import logging
 
 from replace import CombinatoricMap, Target, ReplaceWith, Var, Any, MakeInto, \
     CanMatchTargetElem, Disallow, Filter, TestVar, ignore_matched_input, \
@@ -7,10 +8,11 @@ from source import Source, HasSource, force_source_from
 from letter import Letter, is_vowel, WordBreak, is_wordbreak, is_consonant, \
     onsets
 from misc import trace, dd, lazy, Pipeline, Multiple, run_multiple
+from command_line import HasCommandLineStr
 from testing import reduce_to_text
 
 
-class ConsonantCluster(HasSource):
+class ConsonantCluster(HasSource, HasCommandLineStr):
 
     def __init__(self, *letters):
         self.letters = letters
@@ -83,17 +85,26 @@ class ConsonantCluster(HasSource):
     def __repr__(self):
         return 'ConsonantCluster(%s)' % ', '.join(repr(l) for l in self.letters)
 
-    def __str__(self):
+    def _make_str(self, f, tie):
         result = ''
         prev_letter = None
 
         for letter in self.letters:
             if prev_letter is not None and letter.is_at_start_of_word:
-                result += '⁀'
-            result += str(letter)
+                result += tie
+            result += f(letter)
             prev_letter = letter
 
         return result
+
+    def __str__(self):
+        return self._make_str(str, '⁀')
+
+    def simon(self):
+        return self._make_str(lambda x: x.simon(), '')
+
+    def latex(self):
+        return self._make_str(lambda x: x.latex(), r'{\tie}')
 
 
 @run_multiple
@@ -171,7 +182,12 @@ remove_invalid_clusters = Filter(
 )
 
 
-make_clusters = Pipeline(
+do_make_clusters = Pipeline(
     group_into_clusters,
     remove_invalid_clusters
 )
+
+def make_clusters(with_elisionss):
+    logging.info('MAKING CONSONANT CLUSTERS')
+    return do_make_clusters(with_elisionss)
+    

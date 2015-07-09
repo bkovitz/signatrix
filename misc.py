@@ -81,6 +81,10 @@ class Incompatible(Exception):
 
 
 class Multiple(tuple):
+    """
+    A Multiple holds multiple results, like what most stages of scansion
+    generate.
+    """
 
     def __new__(cls, *elems):
         return super().__new__(cls, elems)
@@ -111,6 +115,16 @@ class Multiple(tuple):
             trace_indent -= 2
             return result
 
+    def str_per_command_line(self):
+        if not len(self):
+            return '(None)'
+        else:
+            result = []
+            for i, x in enumerate(self, start=1):
+                result.append('.%d  %s' % (i, flatstr_per_command_line(x)))
+            return '\n'.join(result)
+
+
 def flatstr(x):
 #    if x.__class__.__name__ == 'Scan':  #HACK
 #        return str(x)
@@ -119,9 +133,15 @@ def flatstr(x):
     else:
         return str(x)
 
+def flatstr_per_command_line(x):
+    if is_listlike(x):
+        return ' '.join(flatstr_per_command_line(a) for a in x)
+    else:
+        return str_per_command_line(x)
+
 
 class Pipeline:
-    def __init__(self, *stages, logmsg=None):
+    def __init__(self, *stages):
         self.stages = stages
 
     def __call__(self, x):
@@ -224,6 +244,22 @@ re_white_space = re.compile(r'\s+')
 def strip_white_space(s):
     return re_white_space.sub('', s)
 
+def number_strs(iterable, f=str):
+    for i, x in enumerate(iterable, start=1):
+        yield '.%d  %s' % (i, f(x))
+
+def str_per_command_line(o):
+    if hasattr(o, 'str_per_command_line'):
+        return o.str_per_command_line()
+    else:
+        return str(o)
+
+def latex(o):
+    if hasattr(o, 'latex'):
+        return o.latex()
+    else:
+        return str(o)
+
 
 class ObjectHolder:
 
@@ -247,3 +283,4 @@ class ObjectHolder:
             self.replace_with(new_object._object)
         else:
             self._object = new_object
+

@@ -4,7 +4,8 @@ from line import Line, Multiple
 from word import WordInstance
 from letter import Letter
 from testing import strip_sources, reduce_to_text
-from misc import trace, dd, Unknown, Incompatible
+from command_line import command_line_arguments
+from misc import trace, dd, Unknown, Incompatible, str_per_command_line
 
 
 class TestLetter(unittest.TestCase):
@@ -100,3 +101,8 @@ class TestLetter(unittest.TestCase):
                 ['l', 'a', 'u', 'i', 'n', 'j', 'a', 'qu', 'e'],
             ]
         )
+
+    def test_latex(self):
+        command_line_arguments.format = 'latex'
+        oe = Letter('oe')
+        self.assertEqual(str_per_command_line(oe), r'{\oe}')

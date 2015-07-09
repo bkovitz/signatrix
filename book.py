@@ -129,7 +129,7 @@ def scan_book(name, from_file, output=stdout):
                 bookdb[line_num] = line
                 print('%d. %s (%d scans)' % (
                     line_num,
-                    line.text,
+                    line.text_per_command_line(),
                     len(line.scans)
                 ), file=output)
                 output.flush()

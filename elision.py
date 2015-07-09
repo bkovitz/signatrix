@@ -1,13 +1,16 @@
+import logging
+
 from replace import CombinatoricMap, Target, ReplaceWith, Var, Any, MakeInto, \
     CanMatchTargetElem, Disallow, TestVar, ignore_matched_input, \
     Make
 from source import Source, HasSource
 from letter import Letter, is_vowel, WordBreak, is_wordbreak
+from command_line import HasCommandLineStr
 from misc import trace, dd, lazy, Pipeline
 from testing import reduce_to_text
 
 
-class Elision(WordBreak):
+class Elision(WordBreak, HasCommandLineStr):
 
     def __init__(self, *elided_letters, already_reduced=False):
         self.elided_letters = elided_letters
@@ -51,19 +54,30 @@ class Elision(WordBreak):
     def __str__(self):
         return '(%s)' % ''.join(str(letter) for letter in self.letters)
 
+    def simon(self):
+        return 'E(%s)' % ''.join(letter.simon() for letter in self.letters)
 
-class Hiatus(WordBreak):
+    def latex(self):
+        return '(%s)' % ''.join(letter.latex() for letter in self.letters)
+
+
+class Hiatus(WordBreak, HasCommandLineStr):
 
     def __repr__(self):
         return 'Hiatus'
-
-    def __str__(self):
-        return ''
 
     @property
     def reduced_to_text(self):
         return self
 
+    def __str__(self):
+        return ''
+
+    def simon(self):
+        return '(H)'
+
+    def latex(self):
+        return ''
 
 hiatus = Hiatus()
 
@@ -107,7 +121,11 @@ hide_elisions_inside_letters = CombinatoricMap(
     (Target(ANY), ReplaceWith([ANY]))
 )
 
-make_elisions = Pipeline(
+do_make_elisions = Pipeline(
     generate_elisions,
     hide_elisions_inside_letters
 )
+
+def make_elisions(letterss):
+    logging.info('ADDING ELISIONS')
+    return do_make_elisions(letterss)

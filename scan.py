@@ -1,5 +1,6 @@
 from collections import defaultdict
 import itertools
+import logging
 
 from replace import CombinatoricMap, Target, ReplaceWith, Var, Any, MakeInto, \
     CanMatchTargetElem, Disallow, Filter, TestVar, ignore_matched_input, \
@@ -10,7 +11,9 @@ from letter import Letter, is_vowel, WordBreak, is_wordbreak, is_consonant, \
 from cluster import ConsonantCluster
 from syllable import Heavy, Light, HeavyOrLight
 from misc import trace, dd, lazy, Pipeline, Multiple, run_multiple, \
-    Incompatible, flatten, Unknown
+    Incompatible, flatten, Unknown, number_strs, str_per_command_line, \
+    latex
+from command_line import command_line_arguments, HasCommandLineStr
 from word import WordForm
 from testing import reduce_to_text
 
@@ -46,7 +49,7 @@ class SyllableMap:
             return False
 
 
-class Scan:
+class Scan(HasCommandLineStr):
 
     def __init__(self, *raw_feet):
         # Here, "raw" means "We don't yet know which syllables are stressed."
@@ -148,10 +151,13 @@ class Scan:
         return '/'.join(str(foot) for foot in self.feet).strip()
 
     def latex(self):
-        return str(self)
+        return '/'.join(foot.latex() for foot in self.feet).strip()
+
+    def simon(self):
+        return '/'.join(foot.simon() for foot in self.feet).strip()
 
 
-class Scanset:
+class Scanset(HasCommandLineStr):
 
     def __init__(self, *scans):
         self.scans = scans
@@ -179,8 +185,20 @@ class Scanset:
         )
         return float(count) / len(self.scans)
 
+    def __str__(self):
+        return '\n'.join(number_strs(self))
+        
+    def latex(self):
+        return '\n\n'.join(number_strs(self, lambda scan: scan.latex()))
 
-class Foot(Chunk):
+    def simon(self):
+        return '\n'.join(number_strs(self, lambda scan: scan.simon()))
+
+#    def str_per_command_line(self):
+#        return '\n'.join(number_strs(self, str_per_command_line))
+
+
+class Foot(Chunk, HasCommandLineStr):
 
     # Subclass must defined 'weights' member: list of required Syllable
     # attributes.
@@ -252,19 +270,28 @@ class Foot(Chunk):
         return self.__class__.__name__ + \
             '(%s)' % ', '.join(repr(sy) for sy in self.raw_syllables)
 
-    def __str__(self):
+    def _make_str(self, f):
         result = ''
         for sy in self.syllables:
             if sy.is_at_start_of_word:
                 result += ' '
             else:
                 result += '-'
-            result += str(sy)
+            result += f(sy)
         if not sy.is_at_end_of_word:
             result += '-'
         else:
             result += ' '
         return result
+
+    def __str__(self):
+        return self._make_str(str)
+
+    def simon(self):
+        return self._make_str(lambda x: x.simon())
+
+    def latex(self):
+        return self._make_str(lambda x: x.latex())
 
 
 class Dactyl(Foot):
@@ -287,8 +314,12 @@ hexameter = ParseInto(
 )
 
 
-@run_multiple
 def make_scans(syllables, parser=hexameter):
+    logging.info('SCANNING FEET')
+    return do_make_scans(syllables, parser)
+    
+@run_multiple
+def do_make_scans(syllables, parser=hexameter):
     return Multiple(*(Scan(*parse) for parse in parser(syllables)))
 
 def eliminate_redundant_scans(scans):

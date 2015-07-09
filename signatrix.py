@@ -16,7 +16,10 @@ def scan(filename):
 
 def dump(dbname):
     for line in BookDatabase(dbname, flag='r').lines:
-        print(line)
+        print(line.str_per_command_line())
+        print()
+        if command_line_arguments.num_stages > 1:
+            print()
 
 def tally(dbnames):
     tally = Tally()
@@ -61,7 +64,7 @@ if __name__ == '__main__':
     except CommandLineError as exc:
         print(exc)
         sys.exit(2)
-    except (SignatrixError, IOError, OSError) as exc:
+    except (SignatrixError, IOError, OSError, KeyboardInterrupt) as exc:
         print(exc)
         sys.exit(1)
 

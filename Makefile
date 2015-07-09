@@ -12,6 +12,6 @@ tags:
 	ctags *.py
 
 1ut:
-	$(PY) test_syllable.py TestSyllable.test_gus_la
+	$(PY) test_syllable.py TestLetter.test_latex
 
 .PHONY: test tags run ut acc

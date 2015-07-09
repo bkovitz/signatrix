@@ -2,6 +2,7 @@
 
 import argparse
 import sys
+from abc import ABCMeta, abstractmethod
 
 from misc import trace, dd, ObjectHolder, CommandLineError
 
@@ -16,13 +17,7 @@ options_parser.add_argument(
     default='db',
     help="database directory (default: db)"
 )
-
 scansion_group = options_parser.add_argument_group('scansion stages')
-scansion_group.add_argument(
-    '--original',
-    action='store_true',
-    help='show original text of each line'
-)
 scansion_group.add_argument(
     '--letters',
     action='store_true',
@@ -44,10 +39,9 @@ scansion_group.add_argument(
     help='show stage in which line is broken into syllables'
 )
 scansion_group.add_argument(
-    '--scans',
+    '--feet',
     action='store_true',
-    default=True,
-    help='show final scans, including feet (included by default unless another scansion stage is chosen)'
+    help='show final scans (included by default unless another scansion stage is chosen)'
 )
 
 options_parser.add_argument(
@@ -66,12 +60,17 @@ options_parser.add_argument(
 )
 options_parser.add_argument(
     '--format',
-    nargs=1,
     type=str,
     choices=['utf-8', 'latex', 'simon'],
     default='utf-8',
     help='output format; simon indicates short/long/accented vowels with S(),L(),A() (default: utf-8)'
 )
+options_parser.add_argument(
+    '--original',
+    action='store_true',
+    help='original text rather than normalized text'
+)
+
 options_parser.add_argument(
     '-v', '--verbose',
     action='store_true',
@@ -131,9 +130,20 @@ command_line_parser.usage = '\n' + ''.join(
 
 def parse_command_line(argv=sys.argv):
     global command_line_arguments
-    command_line_arguments.replace_with(
-        command_line_parser.parse_args(argv[1:])
+
+    parsed = command_line_parser.parse_args(argv[1:])
+    parsed.num_stages = sum(
+        1
+            for stage in [
+                'letters', 'elisions', 'clusters', 'syllables', 'feet'
+            ]
+                if getattr(parsed, stage)
     )
+    if parsed.num_stages == 0:
+        parsed.feet == True
+        parsed.num_stages = 1
+
+    command_line_arguments.replace_with(parsed)
     if command_line_arguments.command is None:
         raise CommandLineError(
             '%s  %s --help' % (command_line_parser.format_usage(), sys.argv[0])
@@ -148,3 +158,20 @@ command_line_arguments.replace_with(
 )
 
 
+class HasCommandLineStr(metaclass=ABCMeta):
+
+    @abstractmethod
+    def latex(self):
+        pass
+
+    @abstractmethod
+    def simon(self):
+        pass
+
+    def str_per_command_line(self):
+        if command_line_arguments.format == 'latex':
+            return self.latex()
+        elif command_line_arguments.format == 'simon':
+            return self.simon()
+        else:
+            return str(self)

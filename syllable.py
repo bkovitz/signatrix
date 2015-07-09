@@ -1,4 +1,5 @@
 from itertools import chain, product
+import logging
 
 from replace import CombinatoricMap, Target, ReplaceWith, Var, Any, MakeInto, \
     CanMatchTargetElem, Disallow, Filter, TestVar, ignore_matched_input, \
@@ -9,10 +10,11 @@ from letter import Letter, is_vowel, WordBreak, is_wordbreak, is_consonant, \
 from cluster import ConsonantCluster
 from misc import trace, dd, lazy, Pipeline, Multiple, run_multiple, \
     first_true, Incompatible, Unknown, flatten
+from command_line import HasCommandLineStr
 from testing import reduce_to_text
 
 
-class Syllable(HasSource):
+class Syllable(HasSource, HasCommandLineStr):
     """
     The elems of a Syllable are ConsonantClusters and vowels (Letters).
     """
@@ -131,32 +133,50 @@ class Syllable(HasSource):
             args = '(stressed) ' + args
         return '%s(%s)' % (self.__class__.__name__, args)
 
-    def __str__(self):
+    def _make_str(self, f, tie, accent_f):
         result = ''
         prev_elem = None
 
         for elem in self.elems:
             if prev_elem is not None and elem.is_at_start_of_word:
-                result += '⁀'
-            result += str(elem)
+                result += tie
             if self.is_stressed is True and is_vowel(elem):
-                result += "'"
+                result += accent_f(f(elem))
+            else:
+                result += f(elem)
             prev_elem = elem
         return result
 
-    @property
-    @lazy
+    def __str__(self):
+        return self._make_str(
+            str,
+            '⁀',
+            lambda x: x + "'"
+        )
+
+    def simon(self):
+        return self._make_str(
+            lambda x: x.simon(),
+            '',
+            lambda x: 'A(%s)' % x
+        )
+
     def latex(self):
-        result = ''
-        prev_elem = None
-
-        for elem in self.elems:
-            if elem.word_instance != prev_elem.word_instance:
-                result += 'r{\tie}'
-            result += elem.latex
-            prev_elem = elem
-
-        return result
+        return self._make_str(
+            lambda x: x.latex(),
+            r'{\tie}',
+            lambda x: r"\'{%s}" % x
+        )
+#        result = ''
+#        prev_elem = None
+#
+#        for elem in self.elems:
+#            if elem.word_instance != prev_elem.word_instance:
+#                result += 'r{\tie}'
+#            result += elem.latex
+#            prev_elem = elem
+#
+#        return result
 
 
 class HeavySyllable(Syllable):
@@ -246,7 +266,11 @@ remove_invalid_syllables = Filter(
 )
 
 
-make_syllables = Pipeline(
+do_make_syllables = Pipeline(
     parse_syllables,
     remove_invalid_syllables
 )
+
+def make_syllables(with_clusterss):
+    logging.info('SYLLABIFYING')
+    return do_make_syllables(with_clusterss)
