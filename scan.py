@@ -194,9 +194,6 @@ class Scanset(HasCommandLineStr):
     def simon(self):
         return '\n'.join(number_strs(self, lambda scan: scan.simon()))
 
-#    def str_per_command_line(self):
-#        return '\n'.join(number_strs(self, str_per_command_line))
-
 
 class Foot(Chunk, HasCommandLineStr):
 

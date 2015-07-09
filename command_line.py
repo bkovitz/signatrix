@@ -41,7 +41,7 @@ stage_group.add_argument(
 stage_group.add_argument(
     '--feet',
     action='store_true',
-    help='show final scans (included by default unless another scansion stage is chosen)'
+    help='show final scans (included by default unless --text or another scansion stage is chosen)'
 )
 
 options_parser.add_argument(
@@ -64,6 +64,11 @@ options_parser.add_argument(
     choices=['utf-8', 'latex', 'simon'],
     default='utf-8',
     help='output format; simon indicates short/long/accented vowels with S(),L(),A() (default: utf-8)'
+)
+options_parser.add_argument(
+    '--text',
+    action='store_true',
+    help='show normalized text'
 )
 options_parser.add_argument(
     '--original',
@@ -143,9 +148,11 @@ def parse_command_line(argv=sys.argv):
             ]
                 if getattr(parsed, stage)
     )
-    if parsed.num_stages == 0:
-        parsed.feet == True
-        parsed.num_stages = 1
+    if not parsed.text and not parsed.original:
+        parsed.text = True
+        if parsed.num_stages == 0:
+            parsed.feet == True
+            parsed.num_stages = 1
 
     command_line_arguments.replace_with(parsed)
     if command_line_arguments.command is None:

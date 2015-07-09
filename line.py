@@ -75,6 +75,14 @@ class Line(HasSource):
         return 'Line'
         #TODO Add short version of index and source.
 
+    @property
+    @lazy
+    def line_num_str(self):
+        try:
+            return '%d. ' % self.source.index
+        except AttributeError:
+            return ''
+
     def __str__(self):
         result = []
         if self.source:
@@ -90,7 +98,15 @@ class Line(HasSource):
 
     def str_per_command_line(self):
         result = []
-        result.append(self.text_per_command_line())
+
+        #result.append(self.text_per_command_line())
+        text_item = []
+        if command_line_arguments.original:
+            text_item.append(self.line_num_str + self.original_text)
+        if command_line_arguments.text:
+            text_item.append(self.line_num_str + self.text)
+        result.append('\n'.join(text_item))
+
         if command_line_arguments.letters:
             result.append(str_per_command_line(self.letters))
         if command_line_arguments.elisions:
@@ -104,7 +120,7 @@ class Line(HasSource):
         return '\n'.join(intersperse('', result))
 
     def text_per_command_line(self):
-        return (
+        return self.line_num_str() + (
             self.original_text
                 if command_line_arguments.original
                 else self.text

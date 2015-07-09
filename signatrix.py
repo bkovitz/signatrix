@@ -17,9 +17,10 @@ def scan(filename):
 def dump(dbname):
     for line in BookDatabase(dbname, flag='r').lines:
         print(line.str_per_command_line())
-        print()
-        if command_line_arguments.num_stages > 1:
+        if command_line_arguments.num_stages > 0:
             print()
+            if command_line_arguments.num_stages > 1:
+                print()
 
 def tally(dbnames):
     tally = Tally()
